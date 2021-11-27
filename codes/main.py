@@ -54,8 +54,12 @@ class Game:
     def generate_army(self, pool, str, var):
         while True:
             army = []
+            pl = pool[:]
             for i in range(7):
-                army.append(random.choice(pool))   
+                piece = random.choice(pl)
+                if piece in army:
+                    pl.remove(piece)
+                army.append(piece)   
             total = sum([i.value() for i in army])
             variance = sum([(i.value() - total/7)**2 for i in army])
             print(total,variance)
@@ -86,8 +90,8 @@ class Game:
             self.gameboard[(i, 1)] = Pawn(WHITE, 'WP', 1)
             self.gameboard[(i, 6)] = Pawn(BLACK, 'BP', -1)
 
-        w_placer = self.generate_army(pool, (3035,3735),(20000,180000))
-        b_placer = self.generate_army(pool, (3035,3735),(20000,180000))
+        w_placer = self.generate_army(pool, (3035,3735),(20000,500000))
+        b_placer = self.generate_army(pool, (3035,3735),(20000,500000))
 
         for i in range(0, 8):
             self.gameboard[(i, 0)] = w_placer[i](WHITE, 'W' + w_placer[i].abbr)
@@ -169,7 +173,7 @@ class Game:
         -------
         result : list > [(int, int), ...]
         '''
-        result = piece.available_moves(*startpos, gameboard, color=piece.color)
+        result = piece.available_moves(*startpos, gameboard)
         # アンパッサン
         self.en_passant = False
         for endpos in ([(i, 2) for i in range(8)] + [(i, 5) for i in range(8)]):
@@ -387,7 +391,7 @@ class Game:
         '''
         for position, piece in gameboard.items():
             if color == piece.color:
-                for dest in piece.available_moves(*position, gameboard, color=color):
+                for dest in piece.available_moves(*position, gameboard):
                     gameboardTmp = copy(gameboard)
                     self.renew_gameboard(position, dest, gameboardTmp)
                     if not self.is_check(color, gameboardTmp):
@@ -602,8 +606,8 @@ class Game:
                     
             if self.prom and promotion_mode == "fairy":
                 piece_color = self.gameboard[self.endpos].color
-                start_pos = 3.5 - (len(self.pieces)/2)
-                piece_selection = floor(self.mousepos[0] - start_pos)
+                left_border = 3.5 - (len(self.pieces)/2)
+                piece_selection = floor(self.mousepos[0] - left_border)
                 if (3.0 < self.mousepos[1] < 4.0) and -1 < piece_selection < len(self.pieces):
                     self.gameboard[self.endpos] = self.pieces[piece_selection](piece_color, piece_color + self.pieces[piece_selection].abbr)
                     self.prom = False                  
