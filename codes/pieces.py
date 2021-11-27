@@ -10,7 +10,7 @@ class Piece:
         self.color = color
 
     def is_valid(self, startpos, endpos, color, gameboard):
-        if endpos in self.available_moves(startpos[0], startpos[1], gameboard, color=color):
+        if endpos in self.available_moves(startpos[0], startpos[1], gameboard):
             return True
         return False
 
@@ -20,10 +20,12 @@ class Piece:
     def __str__(self):
         return self.name
 
-    def available_moves(self, x, y, gameboard, color):
+    def available_moves(self, x, y, gameboard):
         print("ERROR: no movement for base class")
 
-    def AdNauseum(self, x, y, gameboard, color, intervals, n=100):
+    
+
+    def rider(self, x, y, gameboard, color, intervals, n=100):
         """repeats the given interval until another piece is run into. 
         if that piece is not of the same color, that square is added and
          then the list is returned"""
@@ -59,30 +61,18 @@ class Piece:
             return True
         return False
 
+def leaper(int1, int2, x = 0, y = 0):
+        return [(x+int1, y+int2), (x-int1, y+int2), (x+int1, y-int2), (x-int1, y-int2), (x+int2, y+int1), (x-int2, y+int1), (x+int2, y-int1), (x-int2, y-int1)]
 
+W = leaper(1, 0)
+F = leaper(1, 1)
+N = leaper(2, 1)
+C = leaper(3, 1)
+Z = leaper(3, 2)
+J = leaper(4, 1)
+L = leaper(4, 3)
 
-chessCardinals = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-chessDiagonals = [(1, 1), (-1, 1), (1, -1), (-1, -1)]
-chessKnights = [(1, 2), (-1, 2), (1, -2), (-1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)]
-chessCamels = [(1, 3), (-1, 3), (1, -3), (-1, -3), (3, 1), (-3, 1), (3, -1), (-3, -1)]
-chessZebras = [(2, 3), (-2, 3), (2, -3), (-2, -3), (3, 2), (-3, 2), (3, -2), (-3, -2)]
-
-
-def knightList(x, y, int1, int2):
-    """sepcifically for the rook, permutes the values needed around a position for noConflict tests"""
-    return [(x+int1, y+int2), (x-int1, y+int2), (x+int1, y-int2), (x-int1, y-int2), (x+int2, y+int1), (x-int2, y+int1), (x+int2, y-int1), (x-int2, y-int1)]
-
-
-def kingList(x, y):
-    return [(x+1, y), (x+1, y+1), (x+1, y-1), (x, y+1), (x, y-1), (x-1, y), (x-1, y+1), (x-1, y-1)]
-
-
-def ferzList(x, y):
-    return [(x+1, y+1), (x-1, y+1), (x+1, y-1), (x-1, y-1)]
-    
-
-def wazirList(x, y):
-    return [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]
+K = W + F
 
 
 class Knight(Piece):
@@ -91,10 +81,8 @@ class Knight(Piece):
     def value():
         return 315
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return [(xx, yy) for xx, yy in knightList(x, y, 2, 1) if self.noConflict(gameboard, color, xx, yy)]
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, N, 1)
 
 
 class Rook(Piece):
@@ -103,10 +91,8 @@ class Rook(Piece):
     def value():
         return 500
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessCardinals)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, W)
 
 
 class Bishop(Piece):
@@ -115,10 +101,8 @@ class Bishop(Piece):
     def value():
         return 315
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessDiagonals)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, F)
 
 
 class Queen(Piece):
@@ -127,19 +111,14 @@ class Queen(Piece):
     def value():
         return 975
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessCardinals+chessDiagonals)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, K)
 
 
 class King(Piece):
     abbr = 'K'
-
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return [(xx, yy) for xx, yy in kingList(x, y) if self.noConflict(gameboard, color, xx, yy)]
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, K, 1)
 
 
 class Pawn(Piece):
@@ -151,13 +130,11 @@ class Pawn(Piece):
         # of course, the smallest piece is the hardest to code. direction should be either 1 or -1, should be -1 if the pawn is traveling "backwards"
         self.direction = direction
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
+    def available_moves(self, x, y, gameboard):
         answers = []
-        if (x+1, y+self.direction) in gameboard and self.noConflict(gameboard, color, x+1, y+self.direction):
+        if (x+1, y+self.direction) in gameboard and self.noConflict(gameboard, self.color, x+1, y+self.direction):
             answers.append((x+1, y+self.direction))
-        if (x-1, y+self.direction) in gameboard and self.noConflict(gameboard, color, x-1, y+self.direction):
+        if (x-1, y+self.direction) in gameboard and self.noConflict(gameboard, self.color, x-1, y+self.direction):
             answers.append((x-1, y+self.direction))
         if (x, y+self.direction) not in gameboard:
             # the condition after the and is to make sure the non-capturing movement (the only fucking one in the game) is not used in the calculation of checkmate
@@ -176,10 +153,8 @@ class Nightrider(Piece):
     def value():
         return 475
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessKnights)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, N)
 
 
 class Mann(Piece):
@@ -188,10 +163,8 @@ class Mann(Piece):
     def value():
         return 375
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return [(xx, yy) for xx, yy in kingList(x, y) if self.noConflict(gameboard, color, xx, yy)]
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, K, 1)
         
 
 class Ferz(Piece):
@@ -200,10 +173,8 @@ class Ferz(Piece):
     def value():
         return 150
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return [(xx, yy) for xx, yy in ferzList(x, y) if self.noConflict(gameboard, color, xx, yy)]
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, F, 1)
 
         
 class Wazir(Piece):
@@ -212,10 +183,8 @@ class Wazir(Piece):
     def value():
         return 170
     
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return [(xx, yy) for xx, yy in wazirList(x, y) if self.noConflict(gameboard, color, xx, yy)]
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, W, 1)
 
 
 class Amazon(Piece):
@@ -224,10 +193,8 @@ class Amazon(Piece):
     def value():
         return 1250
         
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessCardinals+chessDiagonals) + [(xx, yy) for xx, yy in knightList(x, y, 2, 1) if self.noConflict(gameboard, color, xx, yy)]
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, K) + self.rider(x, y, gameboard, self.color, N, 1)
        
 
 class Chancellor(Piece):
@@ -236,10 +203,8 @@ class Chancellor(Piece):
     def value():
         return 800
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessCardinals) + [(xx, yy) for xx, yy in knightList(x, y, 2, 1) if self.noConflict(gameboard, color, xx, yy)]
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, W) + self.rider(x, y, gameboard, self.color, N, 1)
         
         
 class Archbishop(Piece):
@@ -248,10 +213,8 @@ class Archbishop(Piece):
     def value():
         return 770
         
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessDiagonals) + [(xx, yy) for xx, yy in knightList(x, y, 2, 1) if self.noConflict(gameboard, color, xx, yy)]
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, F) + self.rider(x, y, gameboard, self.color, N, 1)
 
 
 class ShortRook4(Piece):
@@ -260,10 +223,8 @@ class ShortRook4(Piece):
     def value():
         return 380
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessCardinals,4)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, W, 4)
 
 
 class ShortRook2(Piece):
@@ -272,10 +233,8 @@ class ShortRook2(Piece):
     def value():
         return 270
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessCardinals,2)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, W, 2)
 
     
 class ShortBishop2(Piece):
@@ -284,10 +243,8 @@ class ShortBishop2(Piece):
     def value():
         return 220
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessDiagonals,2)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, F, 2)
         
         
 class ShortBishop4(Piece):
@@ -296,10 +253,8 @@ class ShortBishop4(Piece):
     def value():
         return 250
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessDiagonals,4)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, F, 4)
 
 
 class Unicorn(Piece):
@@ -308,10 +263,8 @@ class Unicorn(Piece):
     def value():
         return 900
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessKnights+chessDiagonals)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, N+F)
 
 
 class Camel(Piece):
@@ -320,10 +273,8 @@ class Camel(Piece):
     def value():
         return 220
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessCamels, 1)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, C, 1)
 
 
 class Zebra(Piece):
@@ -332,10 +283,8 @@ class Zebra(Piece):
     def value():
         return 180
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessZebras, 1)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, Z, 1)
 
 
 class ZebraCamel(Piece):
@@ -344,10 +293,8 @@ class ZebraCamel(Piece):
     def value():
         return 400
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessZebras+chessCamels, 1)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, Z+C, 1)
 
 
 class Centaur(Piece):
@@ -356,10 +303,8 @@ class Centaur(Piece):
     def value():
         return 600
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessCardinals+chessDiagonals+chessKnights, 1)
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, K+N, 1)
 
 
 class CentaurRider(Piece):
@@ -368,15 +313,42 @@ class CentaurRider(Piece):
     def value():
         return 900
 
-    def available_moves(self, x, y, gameboard, color=None):
-        if color is None:
-            color = self.color
-        return self.AdNauseum(x, y, gameboard, color, chessCardinals+chessDiagonals, 1) + self.AdNauseum(x, y, gameboard, color, chessKnights)
-
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, K, 1) + self.rider(x, y, gameboard, self.color, N)
         
-piece_names = [Knight, Rook, Bishop, Queen, King, Pawn, Nightrider, Mann, Ferz, Wazir, Amazon, Chancellor, Archbishop, ShortRook4, ShortRook2, ShortBishop2, ShortBishop4, Unicorn, Camel, Zebra, ZebraCamel, Centaur, CentaurRider]
+        
+class BishopCamel(Piece):
+    abbr = "BC"
+    
+    def value():
+        return 750
+        
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, C, 1) + self.rider(x, y, gameboard, self.color, F)
+
+
+class KnightZebra(Piece):
+    abbr = "NZ"
+    
+    def value():
+        return 600
+        
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, N+Z, 1)
+
+
+class DoubleMann(Piece):
+    abbr = "M2"
+    
+    def value():
+        return 500
+        
+    def available_moves(self, x, y, gameboard):
+        return self.rider(x, y, gameboard, self.color, K, 2)
+
+piece_names = Piece.__subclasses__()
 bishops = [Bishop, ShortBishop4, ShortBishop2, Ferz]
-colorbounded = bishops + [Camel]
+colorbounded = bishops + [Camel, BishopCamel]
 
 
 
