@@ -1,3 +1,6 @@
+Check out https://www.chess9b60.com! This project was the original bad version of that which I threw together, and then some of my friends ran with the idea to make a much better website.
+
+Original readme:
 These codes is the modified version of [chess program for python](https://gist.github.com/rsheldiii/2993225) by [rsheldiii](https://gist.github.com/rsheldiii).
 
 The images of pieces is made from [the image](https://pixabay.com/vectors/chess-pieces-set-symbols-game-26774/) from [Pixabay](https://pixabay.com) by [Clker-Free-Vector-Images](https://pixabay.com/users/clker-free-vector-images-3736/) and [Alfaerie Variant Chess Graphics](https://www.chessvariants.com/graphics.dir/alfaerie/index.html).
